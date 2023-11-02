@@ -1,6 +1,44 @@
-import { MDXEditor } from '@mdxeditor/editor/MDXEditor'
-import '@mdxeditor/editor/style.css'
-import { ChangeCodeMirrorLanguage, ConditionalContents, InsertCodeBlock, InsertSandpack, SandpackConfig, ShowSandpackInfo, codeBlockPlugin, codeMirrorPlugin, sandpackPlugin, toolbarPlugin } from '@mdxeditor/editor'
+import { MDXEditor } from '@mdxeditor/editor/MDXEditor';
+import '@mdxeditor/editor/style.css';
+import {
+  AdmonitionDirectiveDescriptor,
+  AdmonitionKind,
+  BlockTypeSelect,
+  BoldItalicUnderlineToggles,
+  ChangeAdmonitionType,
+  ChangeCodeMirrorLanguage,
+  CodeToggle,
+  ConditionalContents,
+  CreateLink,
+  DialogButton,
+  DiffSourceToggleWrapper,
+  EditorInFocus,
+  InsertAdmonition,
+  InsertCodeBlock,
+  InsertFrontmatter,
+  InsertSandpack,
+  InsertTable,
+  InsertThematicBreak,
+  ListsToggle,
+  SandpackConfig,
+  Separator,
+  ShowSandpackInfo,
+  UndoRedo,
+  codeBlockPlugin,
+  codeMirrorPlugin,
+  diffSourcePlugin,
+  directivesPlugin,
+  frontmatterPlugin,
+  // imagePlugin,
+  linkDialogPlugin,
+  linkPlugin,
+  listsPlugin,
+  sandpackPlugin,
+  toolbarPlugin
+} from '@mdxeditor/editor';
+import './App.css';
+import { KInsertImage } from './toolbar/KInsertImage';
+import { imagePlugin } from './plugins/kImagePlugin';
 
 const defaultSnippetContent = `
 export default function App() {
@@ -11,7 +49,18 @@ export default function App() {
     </div>
   );
 }
-`.trim()
+`.trim();
+
+function whenInAdmonition(editorInFocus: EditorInFocus | null) {
+  const node = editorInFocus?.rootNode;
+  if (!node || node.getType() !== 'directive') {
+    return false;
+  }
+
+  return ['note', 'tip', 'danger', 'info', 'caution'].includes(
+    node.getMdastNode().name as AdmonitionKind
+  );
+}
 
 const simpleSandpackConfig: SandpackConfig = {
   defaultPreset: 'react',
@@ -25,34 +74,124 @@ const simpleSandpackConfig: SandpackConfig = {
       snippetFileName: '/App.js',
       snippetLanguage: 'jsx',
       initialSnippetContent: defaultSnippetContent
-    },
+    }
   ]
+};
+
+async function imageUploadHandler(image: File, name?: string) {
+  console.log(image);
+  console.log(name);
+  return await Promise.resolve('https://picsum.photos/200/300');
 }
 
 function App() {
   return (
-    <MDXEditor 
-      markdown='hello world'
-      plugins={[
-        codeBlockPlugin({defaultCodeBlockLanguage: 'js'}),
-        sandpackPlugin({ sandpackConfig: simpleSandpackConfig }),
-        codeMirrorPlugin({ codeBlockLanguages: { js: 'JavaScript', css: 'CSS' } }),
-        toolbarPlugin({toolbarContents: () => (
-          <ConditionalContents
-            options={[
-                { when: (editor) => editor?.editorType === 'codeblock', contents: () => <ChangeCodeMirrorLanguage /> },
-                { when: (editor) => editor?.editorType === 'sandpack', contents: () => <ShowSandpackInfo /> },
-                { fallback: () => ( <> 
-                <InsertCodeBlock />
-                <InsertSandpack />
-              </>) }
-              ]}
-            />)
-        })
-      ]
-      } 
-    />
-  )
+    <>
+      <MDXEditor
+        markdown='hello world'
+        plugins={[
+          codeBlockPlugin({ defaultCodeBlockLanguage: 'js' }),
+          sandpackPlugin({ sandpackConfig: simpleSandpackConfig }),
+          codeMirrorPlugin({
+            codeBlockLanguages: { js: 'JavaScript', css: 'CSS' }
+          }),
+          listsPlugin(),
+          diffSourcePlugin(),
+          linkPlugin(),
+          linkDialogPlugin(),
+          // imagePlugin({
+          //   imageUploadHandler
+          // }),
+          imagePlugin({
+            imageUploadHandler
+          }),
+          directivesPlugin({
+            directiveDescriptors: [AdmonitionDirectiveDescriptor]
+          }),
+          frontmatterPlugin(),
+          toolbarPlugin({
+            toolbarContents: () => (
+              <DiffSourceToggleWrapper>
+                <ConditionalContents
+                  options={[
+                    {
+                      when: (editor) => editor?.editorType === 'codeblock',
+                      contents: () => <ChangeCodeMirrorLanguage />
+                    },
+                    {
+                      when: (editor) => editor?.editorType === 'sandpack',
+                      contents: () => <ShowSandpackInfo />
+                    },
+                    {
+                      fallback: () => (
+                        <>
+                          <UndoRedo />
+                          <Separator />
+                          <BoldItalicUnderlineToggles />
+                          <CodeToggle />
+                          <Separator />
+                          <ListsToggle />
+                          <Separator />
+                          <DialogButton
+                            buttonContent='Button'
+                            tooltipTitle='test'
+                            dialogInputPlaceholder='shuru'
+                            submitButtonTitle='save'
+                            onSubmit={() => console.log('first')}
+                          />
+                          <Separator />
+                          <KInsertImage />
+                          <Separator />
+                          <ConditionalContents
+                            options={[
+                              {
+                                when: whenInAdmonition,
+                                contents: () => <ChangeAdmonitionType />
+                              },
+                              { fallback: () => <BlockTypeSelect /> }
+                            ]}
+                          />
+
+                          <Separator />
+                          <CreateLink />
+                          <Separator />
+
+                          <InsertTable />
+                          <InsertThematicBreak />
+
+                          <Separator />
+                          <InsertCodeBlock />
+                          <InsertSandpack />
+
+                          <ConditionalContents
+                            options={[
+                              {
+                                when: (editorInFocus) =>
+                                  !whenInAdmonition(editorInFocus),
+                                contents: () => (
+                                  <>
+                                    <Separator />
+                                    <InsertAdmonition />
+                                  </>
+                                )
+                              }
+                            ]}
+                          />
+
+                          <Separator />
+                          <InsertFrontmatter />
+                        </>
+                      )
+                    }
+                  ]}
+                />
+              </DiffSourceToggleWrapper>
+            )
+          })
+        ]}
+      />
+    </>
+  );
 }
 
-export default App
+export default App;
