@@ -30,6 +30,8 @@ import {
   PASTE_COMMAND
 } from 'lexical';
 import { KImageDialog } from '../components/KImageDialog';
+import { MdastHtmlImageVisitor, MdastImageVisitor, MdastJsxImageVisitor } from './imageVisitor';
+import { LexicalImageVisitor } from './lexicalImageVisitor';
 
 export type ImageUploadHandler =
   | ((image: File, name?: string) => Promise<string>)
@@ -430,11 +432,11 @@ export const [imagePlugin, imagePluginHooks] = realmPlugin({
   },
 
   init: (realm) => {
-    // realm.pubKey('addImportVisitor', MdastImageVisitor);
-    // realm.pubKey('addImportVisitor', MdastHtmlImageVisitor);
-    // realm.pubKey('addImportVisitor', MdastJsxImageVisitor);
+    realm.pubKey('addImportVisitor', MdastImageVisitor);
+    realm.pubKey('addImportVisitor', MdastHtmlImageVisitor);
+    realm.pubKey('addImportVisitor', MdastJsxImageVisitor);
     realm.pubKey('addLexicalNode', ImageNode);
-    // realm.pubKey('addExportVisitor', LexicalImageVisitor);
+    realm.pubKey('addExportVisitor', LexicalImageVisitor);
     realm.pubKey('addComposerChild', KImageDialog);
   }
 });

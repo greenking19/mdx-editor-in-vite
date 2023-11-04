@@ -79,8 +79,6 @@ const simpleSandpackConfig: SandpackConfig = {
 };
 
 async function imageUploadHandler(image: File, name?: string) {
-  console.log(image);
-  console.log(name);
   return await Promise.resolve('https://picsum.photos/200/300');
 }
 
@@ -131,14 +129,6 @@ function App() {
                           <CodeToggle />
                           <Separator />
                           <ListsToggle />
-                          <Separator />
-                          <DialogButton
-                            buttonContent='Button'
-                            tooltipTitle='test'
-                            dialogInputPlaceholder='shuru'
-                            submitButtonTitle='save'
-                            onSubmit={() => console.log('first')}
-                          />
                           <Separator />
                           <KInsertImage />
                           <Separator />
